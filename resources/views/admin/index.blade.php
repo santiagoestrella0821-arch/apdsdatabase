@@ -18,7 +18,6 @@
 
     <a href="{{ route('admin.dashboard') }}">Dashboard</a>
     <a href="{{ route('pli.index') }}">PLI Management</a>
-    <a href="#">Coverage</a>
     <a href="#">Verifiers</a>
     <a href="#">Reports</a>
 </div>

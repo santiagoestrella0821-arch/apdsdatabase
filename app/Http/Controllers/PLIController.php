@@ -72,38 +72,51 @@ class PLIController extends Controller
 
 public function print(Request $request)
 {
-    $query = PLI::where('accredited', 'YES');
+    $query = DB::table('coverages')
+        ->leftJoin('plis', 'coverages.ded_code', '=', 'plis.code')
+        ->leftJoin('regions', 'coverages.region', '=', 'regions.REGCODE')
+        ->leftJoin('provinces', 'coverages.prov_id', '=', 'provinces.ProvID')
+        ->where('plis.accredited', 'YES');
 
-    // 🔍 SEARCH
+
     if ($request->search) {
         $query->where(function ($q) use ($request) {
-            $q->where('code', 'like', '%' . $request->search . '%')
-              ->orWhere('name', 'like', '%' . $request->search . '%');
+            $q->where('plis.code', 'like', '%' . $request->search . '%')
+              ->orWhere('plis.name', 'like', '%' . $request->search . '%');
         });
     }
 
-    // 🎯 CLASSIFICATION
     if ($request->classification) {
-        $query->where('classification', $request->classification);
+        $query->where('plis.classification', $request->classification);
     }
 
-    // 🎯 REGION
     if ($request->region) {
-        $query->whereHas('coverages', function ($q) use ($request) {
-            $q->where('region', $request->region);
-        });
+        $query->where('coverages.region', $request->region);
     }
 
-    // 🎯 PROVINCE
     if ($request->province) {
-        $query->whereHas('coverages', function ($q) use ($request) {
-            $q->where('prov_id', $request->province);
-        });
+        $query->where('coverages.prov_id', $request->province);
     }
 
-    $plis = $query->get();
+    $data = $query->select(
+            'regions.Region as region_name',
+            'regions.REGCODE',
+            'provinces.Province as province_name',
+            'plis.code',
+            'plis.name'
+        )
+        ->orderBy('regions.REGCODE')
+        ->orderBy('provinces.Province')
+        ->orderBy('plis.name')
+        ->distinct()
+        ->get();
 
-    $pdf = Pdf::loadView('admin.pli.print', compact('plis'));
+    // 🔥 GROUP: REGION → PROVINCE
+    $grouped = $data->groupBy('region_name')->map(function ($region) {
+        return $region->groupBy('province_name');
+    });
+
+    $pdf = Pdf::loadView('admin.pli.print', compact('grouped'));
 
     return $pdf->stream('pli.pdf');
 }

@@ -2,13 +2,33 @@
 <html>
 <head>
     <style>
-        body { font-family: Arial; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; }
-        table, th, td { border: 1px solid black; }
-        th, td { padding: 5px; }
-        h3 { text-align: center; }
+   body {
+    font-family: Arial;
+    font-size: 11px;
+    margin: 40px;
+}
 
-        .header {
+/* REMOVE FULL TABLE BORDER LOOK */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-left: 15px;
+}
+
+td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #ccc; /* light line only */
+}
+
+/* REMOVE THIS ❌ */
+/* table, th, td { border: 1px solid black; } */
+
+h3 {
+    text-align: center;
+}
+
+/* HEADER */
+.header {
     text-align: center;
     margin-bottom: 15px;
 }
@@ -29,6 +49,33 @@
     font-size: 12px;
 }
 
+/* REGION STYLE */
+.region {
+    background: #e5e7eb;
+    padding: 6px 8px;
+    font-weight: bold;
+    margin-top: 12px;
+}
+
+/* PROVINCE */
+.province {
+    margin-left: 10px;
+    margin-top: 6px;
+    font-weight: bold;
+}
+
+/* CODE COLUMN */
+.code {
+    width: 70px;
+    font-weight: bold;
+}
+
+/* NAME */
+.name {
+    text-transform: uppercase;
+}
+
+/* FOOTER (KEEP MO) */
 footer {
     position: fixed;
     bottom: -30px;
@@ -82,27 +129,32 @@ footer {
     </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Code</th>
-            <th>Name</th>
-            <th>Classification</th>
-            <th>Accredited</th>
-        </tr>
-    </thead>
-    <tbody>
-     @foreach($plis as $index => $pli)
-    <tr>
-      <tr>
-    <td>{{ $loop->iteration }}</td>
-    <td>{{ $pli->code }}</td>
-    <td>{{ $pli->name }}</td>
-    <td>{{ $pli->classification }}</td>
-    <td>{{ $pli->accredited }}</td>
-</tr>
-    </tr>
+@foreach($grouped as $region => $provinces)
+
+    <!-- REGION -->
+    <div class="region">
+        {{ $region }}
+    </div>
+
+    @foreach($provinces as $province => $items)
+
+        <!-- PROVINCE WITH COUNT -->
+        <div class="province">
+            {{ $province }} ({{ $items->count() }})
+        </div>
+
+        <!-- LIST -->
+        <table width="100%" cellspacing="0" cellpadding="3">
+            @foreach($items as $pli)
+            <tr>
+                <td width="70" class="code">{{ $pli->code }}</td>
+                <td class="name">{{ strtoupper($pli->name) }}</td>
+            </tr>
+            @endforeach
+        </table>
+
+    @endforeach
+
 @endforeach
     </tbody>
 </table>
